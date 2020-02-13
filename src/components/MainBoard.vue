@@ -1,10 +1,9 @@
 <template>
     <div >
         <div class="board">
-            <!-- <b-form-input v-model="title" type="text" placeholder="title"/> -->
-            
+            <b-form-input v-model="title" type="text" placeholder="title"/>
+            <b-button v-on:click="onAddList(title)">Add list</b-button>
             <div v-for="(board,index) in boards" :key="index">
-              <b-button v-on:click="onAddList(title)">Add list</b-button>
             <b-container>           
             <draggable >
               <b-row>
@@ -12,7 +11,7 @@
                   <div>{{board.boardTitle}}</div>
             <draggable v-for="card in board.Cards" :key="card.id" group="people" >
               <div>
-        {{card.title}}<b-button v-on:click="showModal(card)">Show Modal</b-button>
+        {{card.title}}<b-button v-on:click="showModal(board.boadTitle,card)">Show Modal</b-button>
         </div>
             </draggable>
             </div>
@@ -22,7 +21,7 @@
              </div>
         </div>
      <b-modal  size="lg" v-model="modal" @ok="handleOk">
-              <modal ref="cardModal" v-bind:sendData="modalData" @child="getData"/>
+              <modal ref="cardModal" v-bind:boardTitle="boardTitle" v-bind:sendData="modalData" @child="getData"/>
     </b-modal> 
     </div>   
 </template>
@@ -54,7 +53,8 @@ export default {
             }
             ],
             card:{},
-            modalData:{}
+            modalData:{},
+            boardTitle:{},
         }
     },
     methods:{
@@ -67,9 +67,10 @@ export default {
         showInputForm:function(){
             console.log("showInputForm");
         },
-        showModal(items){
+        showModal(title,items){
           this.modal=true
           this.modalData=items
+          this.boardTitle=title
           console.log(this.modalData)
           this.$nextTick(() => {
             this.$refs.cardModal.show()
@@ -77,12 +78,17 @@ export default {
         },
         handleOk(){
           console.log("Press Ok")
+            this.$nextTick(() => {
+            this.$refs.cardModal.update()
+        })
           
         },
-        getData(card){
+        getData(boardTitle,card){
           console.log("getDataFromChild")
+          console.log(boardTitle)
           console.log(card.title)
           console.log(card.content)
+
         }   
     }
     
