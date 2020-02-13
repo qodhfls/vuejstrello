@@ -1,9 +1,9 @@
 <template>
 <div>
  
-  <h1>{{this.sendData.title}}</h1>
-<b-form-input v-model="this.card.title" type="text" placeholder="title"/>
-<b-form-input v-model="this.card.content" type="text" placeholder="title"/>
+  <h1>{{this.card.title}}</h1>
+<b-form-input v-model="card.title" type="text" placeholder="title"/>
+<b-form-input v-model="card.content" type="text" placeholder="content"/>
 
   </div>
 </template>
@@ -14,12 +14,12 @@ export default {
   props: ['sendData'],
    data:function(){
         return{
-          title,
-          card:{title:"",content:""}
-
+          card:{}
     }
    },created(){
-     this.title=this.boardTitle
+     this.card.boardId=this.sendData.boardId
+     this.card.boardTitle=this.sendData.boardTitle
+     this.card.id=this.sendData.id;
      this.card.title=this.sendData.title
      this.card.content=this.sendData.content
    },
@@ -28,14 +28,10 @@ export default {
       this.$refs.modal.hide()
     },
     show() {
-      console.log("modal show")
-      console.log(this.sendData)
-      //this.$emit("child",this.card)
-      
     },
     update(){
       console.log("modal update")
-      this.$emit("child",boardTitle,this.card)
+      this.$emit("child",this.card)
     } 
     
     }
