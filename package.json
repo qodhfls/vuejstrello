@@ -14,6 +14,7 @@
     "v-drag-drop": "^1.0.0",
     "vue": "^2.6.11",
     "vue-draggable": "^2.0.6",
+    "vue-localstorage": "^0.6.2",
     "vuedraggable": "^2.23.2"
   },
   "devDependencies": {

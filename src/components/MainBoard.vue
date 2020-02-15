@@ -1,8 +1,8 @@
 <template>
     <div >
         <div class="board">
-            <b-form-input v-model="newTitle" type="text" placeholder="title"/>
-            <b-button v-on:click="onAddList(title)">Add list</b-button>
+            <b-form-input v-model="newTitle" type="text" placeholder="listTitle"/>
+            <b-button v-on:click="onAddList(newTitle)">Add list</b-button>
             <div>
               <draggable>
             <div v-for="(board,index) in boards" :key="index">
@@ -13,11 +13,13 @@
             <draggable v-for="card in board.cards" :key="card.id" group="people" >
               <div>
         {{card.title}}<b-button v-on:click="showModal(card)">Show Modal</b-button>
-        }<b-button v-on:click="deleteModal(card)">Delete Modal</b-button>
+        <b-button v-on:click="deleteModal(card)">Delete Modal</b-button>
         </div>
             </draggable>
             </div>
               </b-row>
+        <b-form-input v-model="cardTitle" type="text" placeholder="cardTitle"/>
+        <b-button v-on:click="addCard(cardTitle,board.boardTitle)">Add Card</b-button>
             </b-container>
         </div>
         </draggable>
@@ -26,6 +28,7 @@
      <b-modal  size="lg" v-model="modal" @ok="handleOk">
               <modal ref="cardModal" v-bind:sendData="modalData" @child="updateCard"/>
     </b-modal> 
+    
     </div>   
 </template>
 
@@ -42,30 +45,47 @@ export default {
     data:function(){
         return{
           newTitle:"",
+          cardTitle:"",
           modal:false,
-            boards:[{boardTitle:"Test",cards:[
-                {boardId:0,boardTitle:"Test",id:0,
-                title:"a",content:"1",timeLimit:""}
-                ,{boardId:0,boardTitle:"Test",id:1,
-                title:"b",content:"2",timeLimit:""}
-            ]},{boardTitle:"Test2",cards:[
-                {boardId:1,boardTitle:"Test",id:0,
-                title:"c",content:"3",timeLimit:""}
-                ,{boardId:1,boardTitle:"Test2",id:1,
-                title:"d",content:"5",timeLimit:""}
-                ]
-            }
-            ],
+            // boards:[{boardTitle:"Test",cards:[
+            //     {boardId:0,boardTitle:"Test",id:0,
+            //     title:"a",content:"1",timeLimit:""}
+            //     ,{boardId:0,boardTitle:"Test",id:1,
+            //     title:"b",content:"2",timeLimit:""}
+            // ]},{boardTitle:"Test2",cards:[
+            //     {boardId:1,boardTitle:"Test",id:0,
+            //     title:"c",content:"3",timeLimit:""}
+            //     ,{boardId:1,boardTitle:"Test2",id:1,
+            //     title:"d",content:"5",timeLimit:""}
+            //     ]
+            // }
+            boards:[],
             card:{},
-            modalData:{}
+            modalData:{},
         }
     },
+    created(){
+if(this.$localStorage.get('boards')==undefined){
+this.$localStorage.set('boards', this.boards)
+  console.log(this.boards);
+}else{
+  this.boards=this.$localStorage.get('boards')
+  console.log(this.boards);
+}
+   },
     methods:{
         onAddList:function(title){
-         console.log(title);
+          var boardTitleTmp=title
+         this.boards.push({boardTitle:boardTitleTmp,cards:[]})
+         console.log(this.boards);
         },
-        makeNewList:function(title){
-            console.log(title);
+        addCard:function(cardTitle,boardTitle){
+          var index = this.boards.findIndex(function(item){ return item.boardTitle === boardTitle; })
+          var cardIndex=this.boards[index].cards.length;
+          this.boards[index].cards.push({boardId:index,boardTitle:boardTitle,id:cardIndex+1,title:cardTitle,content:"",timeLimit:""})
+          this.$localStorage.set('boards', this.boards);
+          console.log(this.boards);
+          
         },
         showInputForm:function(){
             console.log("showInputForm");
@@ -92,9 +112,11 @@ export default {
           console.log(modal.boardTitle)
           console.log(modal.title)
           console.log(modal.content)
-          console.log(this.boards[modal.boardId].cards[modal.id])
-          this.boards[modal.boardId].cards[modal.id].title=modal.title;
-          this.boards[modal.boardId].cards[modal.id].content=modal.content;
+          console.log(modal.id)
+          console.log(this.boards[modal.boardId].cards[index])
+           var index = this.boards[modal.boardId].cards.findIndex(function(item){ return item.id === modal.id; })
+          this.boards[modal.boardId].cards[index].title=modal.title;
+          this.boards[modal.boardId].cards[index].content=modal.content;
 
         }   
     }
