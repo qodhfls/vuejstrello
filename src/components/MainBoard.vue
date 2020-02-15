@@ -47,18 +47,6 @@ export default {
           newTitle:"",
           cardTitle:"",
           modal:false,
-            // boards:[{boardTitle:"Test",cards:[
-            //     {boardId:0,boardTitle:"Test",id:0,
-            //     title:"a",content:"1",timeLimit:""}
-            //     ,{boardId:0,boardTitle:"Test",id:1,
-            //     title:"b",content:"2",timeLimit:""}
-            // ]},{boardTitle:"Test2",cards:[
-            //     {boardId:1,boardTitle:"Test",id:0,
-            //     title:"c",content:"3",timeLimit:""}
-            //     ,{boardId:1,boardTitle:"Test2",id:1,
-            //     title:"d",content:"5",timeLimit:""}
-            //     ]
-            // }
             boards:[],
             card:{},
             modalData:{},
@@ -75,20 +63,15 @@ this.$localStorage.set('boards', this.boards)
    },
     methods:{
         onAddList:function(title){
-          var boardTitleTmp=title
-         this.boards.push({boardTitle:boardTitleTmp,cards:[]})
+         this.boards.push({boardTitle:title,cards:[]})
+         this.storageSetBoards()
          console.log(this.boards);
         },
         addCard:function(cardTitle,boardTitle){
-          var index = this.boards.findIndex(function(item){ return item.boardTitle === boardTitle; })
-          var cardIndex=this.boards[index].cards.length;
-          this.boards[index].cards.push({boardId:index,boardTitle:boardTitle,id:cardIndex+1,title:cardTitle,content:"",timeLimit:""})
-          this.$localStorage.set('boards', this.boards);
-          console.log(this.boards);
-          
-        },
-        showInputForm:function(){
-            console.log("showInputForm");
+          var boardIndex = this.boards.findIndex(function(item){ return item.boardTitle === boardTitle; })
+          var cardIndex=this.boards[boardIndex].cards.length;
+          this.boards[boardIndex].cards.push({boardId:boardIndex,boardTitle:boardTitle,id:cardIndex+1,title:cardTitle,content:"",timeLimit:""})
+          this.storageSetBoards() 
         },
         showModal(items){
           this.modal=true
@@ -98,27 +81,25 @@ this.$localStorage.set('boards', this.boards)
           console.log("deleteModal")
           var index = this.boards[items.boardId].cards.findIndex(function(item){ return item.id === items.id; })
           this.boards[items.boardId].cards.splice(index,1);
+          this.storageSetBoards() 
         },
         handleOk(){
           console.log("Press Ok")
             this.$nextTick(() => {
             this.$refs.cardModal.update()
-        })
-          
+        })     
         },
         updateCard(modal){
-          console.log("getDataFromChild")
-          console.log(modal.boardId)
-          console.log(modal.boardTitle)
-          console.log(modal.title)
-          console.log(modal.content)
-          console.log(modal.id)
+          console.log("updateCard")
+          console.log(modal)
           console.log(this.boards[modal.boardId].cards[index])
            var index = this.boards[modal.boardId].cards.findIndex(function(item){ return item.id === modal.id; })
           this.boards[modal.boardId].cards[index].title=modal.title;
           this.boards[modal.boardId].cards[index].content=modal.content;
-
-        }   
+          this.storageSetBoards() 
+        },storageSetBoards:function(){
+          this.$localStorage.set('boards', this.boards);
+        }, 
     }
     
 }
