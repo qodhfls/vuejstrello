@@ -11,22 +11,24 @@
                 <div class="board-container">
                   <div>{{board.boardTitle}}</div>
             <draggable v-for="card in board.cards" :key="card.id" group="people" >
-              <div>
+              <div class="button">
         {{card.title}}<b-button v-on:click="showModal(card)">Show Modal</b-button>
         <b-button v-on:click="deleteModal(card)">Delete Modal</b-button>
         </div>
-            </draggable>
+        </draggable>
             </div>
               </b-row>
+              <div class="cardTitle">
         <b-form-input v-model="cardTitle" type="text" placeholder="cardTitle"/>
-        <b-button v-on:click="addCard(cardTitle,board.boardTitle)">Add Card</b-button>
+        </div>
+        <div class="button"><b-button v-on:click="addModalButton(board.boardId)">Add Card</b-button></div>
             </b-container>
         </div>
         </draggable>
             </div>
         </div>
      <b-modal  size="lg" v-model="modal" @ok="handleOk">
-              <modal ref="cardModal" v-bind:sendData="modalData" @child="updateCard"/>
+              <modal ref="cardModal" v-bind:sendData="modalData" @add="addCard" @update="updateCard"/>
     </b-modal> 
     
     </div>   
@@ -49,7 +51,7 @@ export default {
           modal:false,
             boards:[],
             card:{},
-            modalData:{},
+            modalData:{}
         }
     },
     created(){
@@ -67,13 +69,16 @@ this.$localStorage.set('boards', this.boards)
          this.storageSetBoards()
          console.log(this.boards);
         },
-        addCard:function(cardTitle,boardTitle){
-          var boardIndex = this.boards.findIndex(function(item){ return item.boardTitle === boardTitle; })
+        addModalButton:function(boardId){
+          var boardIndex = this.boards.findIndex(function(item){ return item.boardId === boardId; })
           var cardIndex=this.boards[boardIndex].cards.length;
-          this.boards[boardIndex].cards.push({boardId:boardIndex,boardTitle:boardTitle,id:cardIndex+1,title:cardTitle,content:"",timeLimit:""})
-          this.storageSetBoards() 
+          this.modalData={boardId:boardIndex,boardTitle:this.boards[boardIndex].boardTitle,id:cardIndex+1,title:"",content:"",timeLimit:""}
+          this.modal=true
+          // this.boards[boardIndex].cards.push({boardId:boardIndex,boardTitle:boardTitle,id:cardIndex+1,title:cardTitle,content:"",timeLimit:""})
+          // this.storageSetBoards() 
         },
         showModal(items){
+          console.log()
           this.modal=true
           this.modalData=items
         },
@@ -85,9 +90,25 @@ this.$localStorage.set('boards', this.boards)
         },
         handleOk(){
           console.log("Press Ok")
+          console.log(this.modalData)
+          if(this.modalData.title==""){
+            this.$nextTick(() => {
+              console.log("add")
+            this.$refs.cardModal.add()
+        })
+        } else{
+            console.log("update")
             this.$nextTick(() => {
             this.$refs.cardModal.update()
-        })     
+        })}     
+        },
+        addCard(modal){
+          console.log("addCard")
+          console.log(modal)
+          console.log(this.boards[modal.boardId].cards[index])
+           var index = this.boards[modal.boardId].cards.findIndex(function(item){ return item.id === modal.id; })
+          this.boards[modal.boardId].cards.push({boardId:modal.boardId,boardTitle:modal.boardTitle,id:modal.id+1,title:modal.title,content:modal.content,timeLimit:""})
+          this.storageSetBoards() 
         },
         updateCard(modal){
           console.log("updateCard")
@@ -97,7 +118,8 @@ this.$localStorage.set('boards', this.boards)
           this.boards[modal.boardId].cards[index].title=modal.title;
           this.boards[modal.boardId].cards[index].content=modal.content;
           this.storageSetBoards() 
-        },storageSetBoards:function(){
+        },
+        storageSetBoards:function(){
           this.$localStorage.set('boards', this.boards);
         }, 
     }
@@ -113,6 +135,16 @@ this.$localStorage.set('boards', this.boards)
     margin-right: 20px;
     background-color: #f3f3f3;
     box-shadow: 0 1px 1px rgba(0, 0, 0, 0.12), 0 1px 1px rgba(0, 0, 0, 0.24);
+  }
+  .button{ 
+    width: 150px;
+    padding: 10px;
+    margin: 5px;
+    margin-right: 20px;
+
+  }
+  .cardTitle{
+    width: 100px;
   }
 
 </style>
