@@ -10,25 +10,28 @@
               <b-row>
                 <div class="board-container">
                   <div>{{board.boardTitle}}</div>
-            <draggable v-for="card in board.cards" :key="card.id" group="people" >
+            <draggable  group="people" >
+              <div v-for="card in board.cards" :key="card.id">
               <div class="button">
         {{card.title}}<b-button v-on:click="showModal(card)">Show Modal</b-button>
         <b-button v-on:click="deleteModal(card)">Delete Modal</b-button>
         </div>
+              </div>
         </draggable>
             </div>
               </b-row>
-              <div class="cardTitle">
-        <b-form-input v-model="cardTitle" type="text" placeholder="cardTitle"/>
-        </div>
-        <div class="button"><b-button v-on:click="addModalButton(board.boardId)">Add Card</b-button></div>
+        <div class="button"><b-button v-on:click="addModalButton(board.boardTitle)">Add Card</b-button></div>
+        <div class="button"><b-button v-on:click="deleteList(board.boardTitle)">deleteList</b-button></div>
             </b-container>
         </div>
         </draggable>
             </div>
         </div>
-     <b-modal  size="lg" v-model="modal" @ok="handleOk">
+     <b-modal  id="cardModal" size="lg" v-model="modal" @ok="handleOk">
               <modal ref="cardModal" v-bind:sendData="modalData" @add="addCard" @update="updateCard"/>
+    </b-modal> 
+         <b-modal  id="alertModal" size="sm" v-model="alertModal" ok-only>
+              <alertModal ref="alertModal" v-bind:alertMessage="message"/>
     </b-modal> 
     
     </div>   
@@ -38,47 +41,56 @@
 <script>
 import draggable from 'vuedraggable'
 import modal from './items/modal'
+import alertModal from './items/alertModal'
 
 export default {
      components: {
             draggable,
-            modal
+            modal,
+            alertModal
         },
     data:function(){
         return{
           newTitle:"",
           cardTitle:"",
           modal:false,
+          alertModal:false,
             boards:[],
             card:{},
-            modalData:{}
+            modalData:{},
+            message:""
         }
     },
     created(){
 if(this.$localStorage.get('boards')==undefined){
 this.$localStorage.set('boards', this.boards)
-  console.log(this.boards);
 }else{
   this.boards=this.$localStorage.get('boards')
-  console.log(this.boards);
 }
    },
     methods:{
-        onAddList:function(title){
-         this.boards.push({boardTitle:title,cards:[]})
+        onAddList:function(boardTitle){
+          var boardIndex = this.boards.findIndex(function(item){ return item.boardTitle === boardTitle; })
+          if(boardIndex!=-1){
+            this.message="already have title"
+            this.alertModal=true
+            return 0;
+          }
+         this.boards.push({boardTitle:boardTitle,cards:[]})
          this.storageSetBoards()
-         console.log(this.boards);
         },
-        addModalButton:function(boardId){
-          var boardIndex = this.boards.findIndex(function(item){ return item.boardId === boardId; })
+        deleteList:function(boardTitle){
+          var boardIndex = this.boards.findIndex(function(item){ return item.boardTitle === boardTitle; })
+          this.boards.splice(boardIndex,1)
+          this.storageSetBoards()
+        },
+        addModalButton:function(boardTitle){
+          var boardIndex = this.boards.findIndex(function(item){ return item.boardTitle === boardTitle; })
           var cardIndex=this.boards[boardIndex].cards.length;
           this.modalData={boardId:boardIndex,boardTitle:this.boards[boardIndex].boardTitle,id:cardIndex+1,title:"",content:"",timeLimit:""}
           this.modal=true
-          // this.boards[boardIndex].cards.push({boardId:boardIndex,boardTitle:boardTitle,id:cardIndex+1,title:cardTitle,content:"",timeLimit:""})
-          // this.storageSetBoards() 
         },
         showModal(items){
-          console.log()
           this.modal=true
           this.modalData=items
         },
@@ -103,10 +115,12 @@ this.$localStorage.set('boards', this.boards)
         })}     
         },
         addCard(modal){
-          console.log("addCard")
-          console.log(modal)
-          console.log(this.boards[modal.boardId].cards[index])
            var index = this.boards[modal.boardId].cards.findIndex(function(item){ return item.id === modal.id; })
+            if(index!=-1){
+            this.message="already have cardtitle"
+            this.alertModal=true
+            return 0;
+          }
           this.boards[modal.boardId].cards.push({boardId:modal.boardId,boardTitle:modal.boardTitle,id:modal.id+1,title:modal.title,content:modal.content,timeLimit:""})
           this.storageSetBoards() 
         },
